@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vector Command</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="ui-layer">
+        <div id="score-box">SCORE: <span id="score">0</span></div>
+        <div id="ammo-box">ENERGY: <div id="ammo-bar"><div id="ammo-fill"></div></div></div>
+        <div id="health-box">CITY INTEGRITY: <span id="health">100%</span></div>
+    </div>
+
+    <div id="start-screen" class="overlay">
+        <h1 class="glitch" data-text="VECTOR COMMAND">VECTOR COMMAND</h1>
+        <p>Defend the city from orbital bombardment.</p>
+        <p class="instructions">CLICK to fire a flak shell.</p>
+        <p class="instructions">Explosions destroy incoming meteors.</p>
+        <button id="start-btn">INITIATE DEFENSE</button>
+    </div>
+
+    <div id="game-over-screen" class="overlay hidden">
+        <h1>SIGNAL LOST</h1>
+        <p>The city has fallen.</p>
+        <p>Final Score: <span id="final-score">0</span></p>
+        <button id="restart-btn">REBOOT SYSTEM</button>
+    </div>
+
+    <div class="scanlines"></div>
+    
+    <canvas id="gameCanvas"></canvas>
+
+    <script src="script.js"></script>
+</body>
+</html>
