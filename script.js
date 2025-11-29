@@ -42,7 +42,7 @@ window.addEventListener('keydown', e => {
     }
 });
 
-/* --- ADVANCED HORROR SYNTHESIZER --- */
+/* --- LOUD AUDIO ENGINE --- */
 const AudioSys = {
     ctx: null,
     masterGain: null,
@@ -53,11 +53,14 @@ const AudioSys = {
         if(!AudioSys.ctx) {
             AudioSys.ctx = new (window.AudioContext || window.webkitAudioContext)();
             AudioSys.masterGain = AudioSys.ctx.createGain();
-            AudioSys.masterGain.gain.value = 0.5; // Prevent clipping
+            
+            // --- VOLUME BOOSTED TO 400% ---
+            AudioSys.masterGain.gain.value = 4.0; 
+            
             AudioSys.masterGain.connect(AudioSys.ctx.destination);
             
-            // Create a Noise Buffer (Static) for explosions/gunfire
-            const bufferSize = AudioSys.ctx.sampleRate * 2; // 2 seconds of noise
+            // Noise Buffer for Explosions
+            const bufferSize = AudioSys.ctx.sampleRate * 2;
             const buffer = AudioSys.ctx.createBuffer(1, bufferSize, AudioSys.ctx.sampleRate);
             const data = buffer.getChannelData(0);
             for (let i = 0; i < bufferSize; i++) {
@@ -73,33 +76,31 @@ const AudioSys = {
         AudioSys.stopDrone();
 
         const t = AudioSys.ctx.currentTime;
-        
-        // We create 3 oscillators to make a "chord" from hell
-        const freqs = [55, 58, 110]; // Low A, Detuned A, Octave A
+        // Louder Drone Frequencies
+        const freqs = [55, 58, 110]; 
         
         freqs.forEach(f => {
             const osc = AudioSys.ctx.createOscillator();
             const gain = AudioSys.ctx.createGain();
             
-            osc.type = 'sawtooth'; // Sawtooth is buzzy and harsh
+            osc.type = 'sawtooth';
             osc.frequency.value = f;
             
-            // Lowpass filter to muffle it (sounds like it's underground)
             const filter = AudioSys.ctx.createBiquadFilter();
             filter.type = 'lowpass';
             filter.frequency.value = 180;
             
-            // LFO to make the drone "breathe"
             const lfo = AudioSys.ctx.createOscillator();
             lfo.type = 'sine';
-            lfo.frequency.value = 0.1; // Very slow
+            lfo.frequency.value = 0.1;
             const lfoGain = AudioSys.ctx.createGain();
             lfoGain.gain.value = 50;
             
             lfo.connect(lfoGain);
             lfoGain.connect(filter.frequency);
 
-            gain.gain.setValueAtTime(0.05, t); // Keep subtle
+            // Boosted Drone Volume
+            gain.gain.setValueAtTime(0.2, t); 
             
             osc.connect(filter);
             filter.connect(gain);
@@ -123,17 +124,19 @@ const AudioSys = {
         AudioSys.droneNodes = [];
     },
 
-    // 2. THE WEAPON (Heavy Thud, No Tick)
+    // 2. THE WEAPON (Heavy Railgun)
     shoot: () => {
         if(!AudioSys.ctx) return;
         const t = AudioSys.ctx.currentTime;
         
-        // Layer 1: The Kick (Sub-bass impact)
+        // Layer 1: The Kick
         const osc = AudioSys.ctx.createOscillator();
         const oscGain = AudioSys.ctx.createGain();
-        osc.frequency.setValueAtTime(120, t);
-        osc.frequency.exponentialRampToValueAtTime(10, t + 0.15); // Drop pitch fast
-        oscGain.gain.setValueAtTime(0.5, t);
+        osc.frequency.setValueAtTime(150, t);
+        osc.frequency.exponentialRampToValueAtTime(10, t + 0.15); 
+        
+        // Boosted Shoot Volume
+        oscGain.gain.setValueAtTime(0.8, t);
         oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
         
         osc.connect(oscGain);
@@ -141,15 +144,16 @@ const AudioSys = {
         osc.start();
         osc.stop(t + 0.2);
 
-        // Layer 2: The Blast (Filtered Noise)
+        // Layer 2: The Blast
         const noise = AudioSys.ctx.createBufferSource();
         noise.buffer = AudioSys.noiseBuffer;
         const noiseFilter = AudioSys.ctx.createBiquadFilter();
         noiseFilter.type = 'lowpass';
-        noiseFilter.frequency.setValueAtTime(800, t); // Cut high "tick" frequencies
+        noiseFilter.frequency.setValueAtTime(1000, t); 
         noiseFilter.frequency.exponentialRampToValueAtTime(100, t + 0.1);
         const noiseGain = AudioSys.ctx.createGain();
-        noiseGain.gain.setValueAtTime(0.3, t);
+        
+        noiseGain.gain.setValueAtTime(0.6, t); // Boosted Noise
         noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
         
         noise.connect(noiseFilter);
@@ -164,7 +168,6 @@ const AudioSys = {
         if(!AudioSys.ctx) return;
         const t = AudioSys.ctx.currentTime;
         
-        // Metallic FM Synthesis
         const carrier = AudioSys.ctx.createOscillator();
         const modulator = AudioSys.ctx.createOscillator();
         const gain = AudioSys.ctx.createGain();
@@ -172,21 +175,20 @@ const AudioSys = {
 
         carrier.type = 'sawtooth';
         carrier.frequency.setValueAtTime(100, t);
-        carrier.frequency.linearRampToValueAtTime(400, t + 0.6); // Rising tension
+        carrier.frequency.linearRampToValueAtTime(400, t + 0.6); 
 
         modulator.type = 'square';
-        modulator.frequency.value = 73; // Dissonant ratio
-        modGain.gain.value = 300; // Gritty texture
+        modulator.frequency.value = 73; 
+        modGain.gain.value = 300; 
 
         modulator.connect(modGain);
         modGain.connect(carrier.frequency);
 
-        // Lowpass to remove "8-bit" harshness
         const filter = AudioSys.ctx.createBiquadFilter();
         filter.type = 'lowpass';
         filter.frequency.value = 1500;
 
-        gain.gain.setValueAtTime(0.1, t);
+        gain.gain.setValueAtTime(0.3, t); // Boosted Scream
         gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
 
         carrier.connect(filter);
@@ -199,24 +201,23 @@ const AudioSys = {
         modulator.stop(t + 0.6);
     },
 
-    // 4. THE DESTRUCTION (Deep Rumble)
+    // 4. THE DESTRUCTION (Explosion)
     explode: (isMassive = false) => {
         if(!AudioSys.ctx) return;
         const t = AudioSys.ctx.currentTime;
         const duration = isMassive ? 2.5 : 0.8;
 
-        // Use Noise Buffer instead of Oscillator for "Crumbling" sound
         const src = AudioSys.ctx.createBufferSource();
         src.buffer = AudioSys.noiseBuffer;
         
         const filter = AudioSys.ctx.createBiquadFilter();
         filter.type = 'lowpass';
-        // Start low to sound like a distant thud, not a white noise hiss
         filter.frequency.setValueAtTime(isMassive ? 300 : 500, t); 
         filter.frequency.exponentialRampToValueAtTime(20, t + duration);
         
         const gain = AudioSys.ctx.createGain();
-        gain.gain.setValueAtTime(isMassive ? 1.0 : 0.4, t);
+        // Massive Volume Boost for Explosions
+        gain.gain.setValueAtTime(isMassive ? 2.0 : 0.8, t);
         gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
 
         src.connect(filter);
@@ -230,14 +231,13 @@ const AudioSys = {
     playLevelUp: () => {
         if(!AudioSys.ctx) return;
         const t = AudioSys.ctx.currentTime;
-        // A dark, swelling chord
         [110, 130, 196].forEach((f, i) => {
              const osc = AudioSys.ctx.createOscillator();
              const g = AudioSys.ctx.createGain();
              osc.type = 'triangle';
              osc.frequency.value = f;
              g.gain.setValueAtTime(0, t);
-             g.gain.linearRampToValueAtTime(0.1, t + 1);
+             g.gain.linearRampToValueAtTime(0.4, t + 1); // Boosted Level Up
              g.gain.linearRampToValueAtTime(0, t + 2);
              osc.connect(g);
              g.connect(AudioSys.masterGain);
@@ -310,7 +310,6 @@ class Explosion {
     
     draw() {
         ctx.globalCompositeOperation = 'lighter';
-        // Blood Orange Explosion
         ctx.fillStyle = `rgba(255, 60, 0, ${1 - (this.radius / this.maxRadius)})`;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
@@ -332,10 +331,7 @@ class Hunter {
         this.baseVx = Math.cos(angle);
         this.baseVy = Math.sin(angle);
         
-        // --- INSANE SPEED SCALING ---
-        // Base Speed: 5
-        // Level Multiplier: Adds 2.0 speed per level.
-        // Level 1 = 7 speed. Level 5 = 15 speed.
+        // Speed Calculation
         this.speed = (Math.random() * 2 + 5) + (level * 2.0);
         
         this.wobblePhase = Math.random() * Math.PI * 2;
@@ -522,9 +518,11 @@ function updateUI() {
     document.getElementById('ammo-fill').style.backgroundColor = '#ff4444';
     
     const hEl = document.getElementById('health-box');
-    if(cityHealth > 60) hEl.style.color = '#ff4444';
-    else if (cityHealth > 20) hEl.style.color = 'orange';
-    else hEl.style.color = 'darkred';
+    if (hEl) { // Check if element exists before setting style
+        if(cityHealth > 60) hEl.style.color = '#ff4444';
+        else if (cityHealth > 20) hEl.style.color = 'orange';
+        else hEl.style.color = 'darkred';
+    }
 }
 
 function gameOver() {
@@ -561,19 +559,13 @@ function loop() {
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
 
-    
-    // --- AMMO RECHARGE ---
-    // Fast recharge because you need it
+    // Ammo Recharge
     if (frame % 4 === 0 && ammo < 100) {
         ammo += 2; 
         updateUI();
     }
     
-    // --- INSANE SPAWN RATE SCALING ---
-    // Formula: Drops drastically with level.
-    // Level 1: Every 70 frames
-    // Level 5: Every 20 frames
-    // Level 10: Every 8 frames (Absolute chaos)
+    // Spawn Rate Logic
     let spawnRate = Math.max(8, 80 - (level * 10));
     
     if (frame % spawnRate === 0) {
